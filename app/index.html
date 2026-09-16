@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Project Pulse</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="dashboard">
+      <header class="dashboard__header">
+        <h1 class="dashboard__title">Project Pulse</h1>
+        <p class="dashboard__subtitle">A quick read on active project health, ownership, and recent movement.</p>
+      </header>
+      <main>
+        <section id="project-grid" class="project-grid" aria-label="Projects"></section>
+      </main>
+      <footer class="dashboard__footer">Project data refreshes when project-data.json is updated.</footer>
+    </div>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const projectGrid = document.querySelector('#project-grid');
+        const statusLabels = {
+          'on-track': 'On track',
+          'at-risk': 'At risk',
+          'blocked': 'Blocked',
+          'done': 'Done'
+        };
+        const priorityLabels = {
+          'high': 'High priority',
+          'medium': 'Medium priority',
+          'low': 'Low priority'
+        };
+        const knownStatuses = new Set(Object.keys(statusLabels));
+        const knownPriorities = new Set(Object.keys(priorityLabels));
+
+        const formatFallbackLabel = (value) => {
+          if (typeof value !== 'string' || value.length === 0) {
+            return 'Unknown';
+          }
+
+          return value
+            .split('-')
+            .filter((part) => part.length > 0)
+            .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+            .join(' ');
+        };
+
+        const renderState = (className, message) => {
+          projectGrid.replaceChildren();
+          const state = document.createElement('p');
+          state.className = className;
+          state.textContent = message;
+          projectGrid.append(state);
+        };
+
+        const createBadge = (kind, value, labels, knownValues) => {
+          const badge = document.createElement('span');
+          badge.classList.add('badge', `badge--${kind}`);
+
+          if (knownValues.has(value)) {
+            badge.classList.add(`${kind}--${value}`);
+          }
+
+          const label = labels[value] || formatFallbackLabel(value);
+          const prefix = kind === 'status' ? 'Status: ' : 'Priority: ';
+          badge.setAttribute('aria-label', `${prefix}${label}`);
+          badge.textContent = label;
+
+          return badge;
+        };
+
+        const createProjectCard = (project) => {
+          const card = document.createElement('article');
+          card.className = 'project-card';
+
+          const header = document.createElement('div');
+          header.className = 'project-card__header';
+
+          const title = document.createElement('h2');
+          title.className = 'project-card__title';
+          title.textContent = project.name;
+
+          const owner = document.createElement('p');
+          owner.className = 'project-card__owner';
+          owner.textContent = project.owner;
+
+          header.append(title, owner);
+
+          const badges = document.createElement('div');
+          badges.className = 'project-card__badges';
+          badges.append(
+            createBadge('status', project.status, statusLabels, knownStatuses),
+            createBadge('priority', project.priority, priorityLabels, knownPriorities)
+          );
+
+          const activity = document.createElement('div');
+          activity.className = 'project-card__activity';
+
+          const activityLabel = document.createElement('p');
+          activityLabel.className = 'project-card__activity-label';
+          activityLabel.textContent = 'Recent activity';
+
+          const activityText = document.createElement('p');
+          activityText.className = 'project-card__activity-text';
+          activityText.textContent = project.recentActivity;
+
+          activity.append(activityLabel, activityText);
+          card.append(header, badges, activity);
+
+          return card;
+        };
+
+        fetch('project-data.json')
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`Project data request failed with status ${response.status}`);
+            }
+
+            return response.json();
+          })
+          .then((data) => {
+            const projects = Array.isArray(data.projects) ? data.projects : [];
+            projectGrid.replaceChildren();
+
+            if (projects.length === 0) {
+              renderState('empty-state', 'No projects to show yet. Add a project to project-data.json to see it here.');
+              return;
+            }
+
+            projects.forEach((project) => {
+              projectGrid.append(createProjectCard(project));
+            });
+          })
+          .catch(() => {
+            renderState(
+              'error-state',
+              'Project data could not be loaded. Launch this dashboard with the "Run Project Pulse Dashboard" VS Code configuration so it is served over HTTP.'
+            );
+          });
+      });
+    </script>
+  </body>
+</html>

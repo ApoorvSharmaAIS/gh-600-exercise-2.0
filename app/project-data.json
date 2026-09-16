@@ -1,0 +1,39 @@
+{
+  "projects": [
+    {
+      "name": "Octo Onboarding",
+      "owner": "@mona",
+      "status": "on-track",
+      "recentActivity": "Merged the welcome checklist updates for new hubbers.",
+      "priority": "high"
+    },
+    {
+      "name": "Hubber Handbook",
+      "owner": "@hubot",
+      "status": "at-risk",
+      "recentActivity": "Reviewers requested clearer guidance for remote office hours.",
+      "priority": "medium"
+    },
+    {
+      "name": "Actions Runner Upgrade",
+      "owner": "@octocat",
+      "status": "blocked",
+      "recentActivity": "Waiting on infrastructure approval before rollout can continue.",
+      "priority": "high"
+    },
+    {
+      "name": "Codespaces Quickstart",
+      "owner": "@defunkt",
+      "status": "done",
+      "recentActivity": "Published the final quickstart and closed the launch issue.",
+      "priority": "low"
+    },
+    {
+      "name": "Issue Triage Refresh",
+      "owner": "@githubteacher",
+      "status": "on-track",
+      "recentActivity": "Added new saved replies for common maintainer workflows.",
+      "priority": "medium"
+    }
+  ]
+}
